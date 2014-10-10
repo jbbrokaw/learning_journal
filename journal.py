@@ -5,6 +5,7 @@ import psycopg2
 from contextlib import closing
 from flask import g
 import datetime
+from flask import render_template
 
 DB_SCHEMA = """
 DROP TABLE IF EXISTS entries;
@@ -18,6 +19,10 @@ CREATE TABLE entries (
 
 DB_ENTRY_INSERT = """
 INSERT INTO entries (title, text, created) VALUES (%s, %s, %s)
+"""
+
+DB_ENTRIES_LIST = """
+SELECT id, title, text, created FROM entries ORDER BY created DESC
 """
 
 app = Flask(__name__)
@@ -72,9 +77,19 @@ def write_entry(title, text):
     cur.execute(DB_ENTRY_INSERT, [title, text, now])
 
 
+def get_all_entries():
+    """return a list of all entries as dicts"""
+    con = get_database_connection()
+    cur = con.cursor()
+    cur.execute(DB_ENTRIES_LIST)
+    keys = ('id', 'title', 'text', 'created')
+    return [dict(zip(keys, row)) for row in cur.fetchall()]
+
+
 @app.route('/')
-def hello():
-    return u'Hello world!'
+def show_entries():
+    entries = get_all_entries()
+    return render_template('list_entries.html', entries=entries)
 
 # put this at the very bottom of the file.
 if __name__ == '__main__':
