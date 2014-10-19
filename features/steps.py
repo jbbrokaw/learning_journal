@@ -37,6 +37,20 @@ def see_link(step, text):
     assert (text + "</a>") in world.page
 
 
-@step('I see a[n]? ([a-z]+) tag')
-def see_tag(step, tag):
-    assert ("<" + tag + ">") in world.page
+@step('I submit a post with the following:')
+def write_post(step):
+    from journal import write_entry
+    expected = (u'Test Title', step.multiline)
+
+    with app.test_request_context('/'):
+        write_entry(*expected)
+        # manually commit transaction here to avoid rollback due to
+        # handled exceptions
+        get_database_connection().commit()
+
+
+@step('I see the following:')
+def post_contains(step):
+    client = app.test_client()
+    response = client.get('/')
+    assert step.multiline in response.data
