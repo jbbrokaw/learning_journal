@@ -12,7 +12,8 @@ from flask import url_for
 from flask import redirect
 from flask import session
 from passlib.hash import pbkdf2_sha256
-import markdown
+from flask.ext.markdown import Markdown
+
 
 DB_SCHEMA = """
 DROP TABLE IF EXISTS entries;
@@ -45,6 +46,7 @@ WHERE id=%s
 """
 
 app = Flask(__name__)
+md = Markdown(app, extensions=['fenced_code', 'codehilite'])
 
 app.config['DATABASE'] = os.environ.get(
     'DATABASE_URL', 'dbname=learning_journal user=jbbrokaw'
@@ -142,8 +144,6 @@ def do_login(username='', passwd=''):
 @app.route('/')
 def show_entries():
     entries = get_all_entries()
-    for entry in entries:
-        entry['text'] = markdown.markdown(entry['text'])
     return render_template('list_entries.html', entries=entries)
 
 

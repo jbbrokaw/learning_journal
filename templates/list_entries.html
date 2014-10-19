@@ -23,7 +23,7 @@
     <h3>{{ entry.title }}</h3>
     <p class="dateline">{{ entry.created.strftime('%b. %d, %Y') }}
     <div class="entry_body">
-      {{ entry.text|safe }}
+      {{ entry.text|markdown }}
     </div>
     {% if session.logged_in %}
     <p><a href="{{ url_for('edit', entryid=entry.id) }}">edit</a></p>
