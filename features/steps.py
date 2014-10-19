@@ -102,4 +102,5 @@ def write_post(step):
 def post_contains(step):
     client = app.test_client()
     response = client.get('/')
+    print response.data
     assert step.multiline in response.data
