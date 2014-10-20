@@ -26,7 +26,9 @@
       {{ entry.text|markdown|safe }}
     </div>
     {% if session.logged_in %}
-    <p><a href="{{ url_for('edit', entryid=entry.id) }}">edit</a></p>
+    <p>
+      <a href="{{ url_for('edit', entryid=entry.id) }}">edit</a> <a href="{{ url_for('delete', entryid=entry.id) }}">delete</a>
+    </p>
     {% endif %}
   </article>
   {% else %}
