@@ -40,8 +40,7 @@ SELECT id, title, text, created FROM entries WHERE id=%s
 DB_UPDATE_ENTRY = """
 UPDATE entries
 SET title=%s,
-    text=%s,
-    created=%s
+    text=%s
 WHERE id=%s
 """
 
@@ -135,7 +134,7 @@ def update_entry_in_db(entryid, title, text):
     con = get_database_connection()
     cur = con.cursor()
     now = datetime.datetime.utcnow()
-    cur.execute(DB_UPDATE_ENTRY, [title, text, now, entryid])
+    cur.execute(DB_UPDATE_ENTRY, [title, text, entryid])
 
 
 def delete_entry_in_db(entryid):
