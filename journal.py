@@ -13,7 +13,7 @@ from flask import redirect
 from flask import session
 from passlib.hash import pbkdf2_sha256
 from flask.ext.markdown import Markdown
-
+from functools import wraps
 
 DB_SCHEMA = """
 DROP TABLE IF EXISTS entries;
@@ -64,6 +64,15 @@ app.config['ADMIN_PASSWORD'] = os.environ.get(
 app.config['SECRET_KEY'] = os.environ.get(
     'FLASK_SECRET_KEY', 'sooperseekritvaluenooneshouldknow'
 )
+
+
+def requires_auth(view):
+    @wraps(view)
+    def decorated(*args, **kwargs):
+        if 'logged_in' not in session:
+            return render_template('login.html', error="Login required")
+        return view(*args, **kwargs)
+    return decorated
 
 
 def connect_db():
@@ -133,7 +142,6 @@ def update_entry_in_db(entryid, title, text):
         raise ValueError("Title and text required for writing an entry")
     con = get_database_connection()
     cur = con.cursor()
-    now = datetime.datetime.utcnow()
     cur.execute(DB_UPDATE_ENTRY, [title, text, entryid])
 
 
@@ -157,6 +165,7 @@ def show_entries():
     return render_template('list_entries.html', entries=entries)
 
 
+@requires_auth
 @app.route('/add', methods=['POST'])
 def add_entry():
     try:
@@ -181,18 +190,21 @@ def login():
     return render_template('login.html', error=error)
 
 
+@requires_auth
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('show_entries'))
 
 
+@requires_auth
 @app.route('/edit/<int:entryid>')
 def edit(entryid):
     entry = get_entry_by_id(entryid)
     return render_template('edit_entry.html', entry=entry)
 
 
+@requires_auth
 @app.route('/delete/<int:entryid>', methods=['GET'])
 def delete(entryid):
     try:
@@ -203,6 +215,7 @@ def delete(entryid):
     return redirect(url_for('show_entries'))
 
 
+@requires_auth
 @app.route('/update/<int:entryid>', methods=['POST'])
 def update_entry(entryid):
     try:
